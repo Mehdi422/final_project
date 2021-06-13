@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[49]:
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# In[52]:
+
+
+choco = pd.read_csv("/Users/macbookair/Desktop/flavors_of_cacao.csv")
+
+
+# In[53]:
+
+
+choco.head()
+
+
+# In[54]:
+
+
+choco.info()
+
+
+# In[55]:
+
+
+choco.columns = choco.columns.str.replace("\\n","-").str.replace(" ","-").str.strip(" ")
+choco.columns
+
+
+# In[56]:
+
+
+choco.dtypes
+
+
+# In[57]:
+
+
+choco['Cocoa-Percent'] = choco['Cocoa-Percent'].str.replace('%','').astype(float)/100
+choco.head()
+
+
+# In[58]:
+
+
+choco.columns
+
+
+# In[59]:
+
+
+choco['Specific-Bean-Origin-or-Bar-Name'].value_counts().head(10)
+
+
+# In[60]:
+
+
+choco['Company-Location'].value_counts().head(10)
+
+
+# In[61]:
+
+
+fig, ax = plt.subplots(figsize=[16,4])
+sns.distplot(choco['Rating'],ax=ax)
+ax.set_title('Rating Distrubution')
+
+
+# In[62]:
+
+
+fig, ax = plt.subplots(figsize=[16,4])
+sns.distplot(choco['Cocoa-Percent'], ax=ax)
+ax.set_title('Cocoa %, Distribution')
+plt.show()
+
+
+# In[63]:
+
+
+choco.plot(kind='scatter', x='Rating', y='Cocoa-Percent') ;
+plt.show()
+
+
+# In[64]:
+
+
+fig, ax = plt.subplots(figsize=[6, 16])
+sns.boxplot(
+    data=choco,
+    y='Company-Location',
+    x='Rating'
+)
+ax.set_title('Boxplot, Rating for countries')
+
+
+# In[65]:
+
+
+fig, ax = plt.subplots(figsize=[6, 16])
+sns.boxplot(
+    data=choco,
+    y='Cocoa-Percent',
+    x='Rating'
+)
+ax.set_title('Boxplot, Rating by Cocao-Percent')
+
+
+# In[67]:
+
+
+choco['is_blend'] = np.where(
+    np.logical_or(
+        np.logical_or(choco['Bean-Type'].str.lower().str.contains(',|(blend)|;'),
+                      choco['Company-Location'].str.len() == 1),
+        choco['Company-Location'].str.lower().str.contains(',')
+    )
+    , 1
+    , 0
+)
+
+choco['is_blend'].value_counts()
+
+
+# In[68]:
+
+
+fig, ax = plt.subplots(figsize=[6, 6])
+sns.boxplot(
+    data=choco,
+    x='is_blend',
+    y='Rating',
+)
+ax.set_title('Boxplot, Rating by Blend/Pure')
+
+
+# In[69]:
+
+
+choco_best_beans = choco.groupby('Broad-Bean-Origin')['Rating']                         .aggregate(['mean', 'var', 'count'])                         .replace(np.NaN, 0)                         .sort_values(['mean', 'var'], ascending=[False, False])
+choco_best_beans.head()
+
+
+# In[70]:
+
+
+choco_best_beans = choco_best_beans.sort_values('count', ascending=False)[:20]                             .sort_values('mean', ascending=False)
+choco_best_beans.head()
+
+
+# In[71]:
+
+
+choco_highest = choco.groupby('Company-Location')['Rating']                         .aggregate(['mean', 'var', 'count'])                         .replace(np.NaN, 0)                         .sort_values(['mean', 'var'], ascending=[False, False])
+choco_highest.head()
+
+
+# In[72]:
+
+
+choco_highest = choco_highest.sort_values('count', ascending=False)[:20]             .sort_values('mean', ascending=False)
+    
+choco_highest.head()
+
+
+# In[ ]:
+
+
+
+
